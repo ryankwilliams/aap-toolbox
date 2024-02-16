@@ -1,0 +1,16 @@
+---
+- name: Todo app api
+  hosts: localhost
+
+  sources:
+    - name: Listen for tasks from todo app api
+      ryankwilliams.todo_app_api:
+        url: "http://10.0.98.190:8022"
+        delay: 30
+
+  rules:
+    - name: todo
+      condition: event.status == "todo
+      action:
+        debug:
+          msg: "Handling todo task id: {{ event.task_id }}"
