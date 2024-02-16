@@ -4,7 +4,7 @@
 
   sources:
     - name: Listen for tasks from todo app api
-      ryankwilliams.todo_app_api:
+      ryankwilliams.aap_toolbox.todo_app_api:
         url: "http://10.0.98.190:8022"
         delay: 30
 
