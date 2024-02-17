@@ -1,0 +1,11 @@
+---
+- name: Stop HTTP server
+  hosts: http_server
+  gather_facts: false
+
+  tasks:
+    - name: Stop httpd service
+      ansible.builtin.service:
+        name: httpd
+        state: stopped
+      become: true

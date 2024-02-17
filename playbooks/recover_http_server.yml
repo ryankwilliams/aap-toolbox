@@ -1,0 +1,40 @@
+---
+- name: Recover HTTP server
+  hosts: http_server
+
+  vars:
+    server_url: "http://{{ ansible_facts.default_ipv4.address }}:80"
+
+  tasks:
+    - name: Gather services facts
+      ansible.builtin.service_facts:
+
+    - name: Check the httpd response status
+      ansible.builtin.uri:
+        url: "{{ server_url }}"
+        method: GET
+        validate_certs: false
+      register: response_check
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: Start httpd service when stopped
+      ansible.builtin.service:
+        name: httpd
+        state: started
+      when: ansible_facts.services['httpd.service']['state'] and response_check.status != 200
+      become: true
+
+    - name: Verify httpd server is available
+      ansible.builtin.uri:
+        url: "{{ server_url }}"
+        method: GET
+        return_content: true
+        validate_certs: false
+        status_code: 200
+      register: get_result
+      delegate_to: localhost
+
+    - name: Verify content on static page
+      ansible.builtin.assert:
+        that: "'Hello World!' in get_result.content"

@@ -1,0 +1,58 @@
+---
+- name: Deploy HTTP server
+  hosts: http_server
+
+  vars:
+    server_url: "http://{{ ansible_facts.default_ipv4.address }}:80"
+
+  tasks:
+    - name: Configure dnf repositories
+      become: true
+      block:
+        - name: Add repositories
+          ansible.builtin.yum_repository:
+            name: "{{ item.name }}"
+            description: "{{ item.name }} repository"
+            baseurl: "{{ item.baseurl }}"
+            gpgcheck: false
+            enabled: true
+            sslverify: false
+          loop:
+            - name: appstream
+              baseurl: "{{ appstream_base_url }}"
+            - name: baseos
+              baseurl: "{{ baseos_base_url }}"
+
+    - name: Install/configure httpd server
+      become: true
+      block:
+        - name: Install httpd package
+          ansible.builtin.dnf:  # noqa: package-latest
+            name: httpd
+            state: latest
+
+        - name: Start/enable httpd service
+          ansible.builtin.service:
+            name: httpd
+            state: started
+            enabled: true
+
+        - name: Create index.html for static page
+          ansible.builtin.copy:
+            dest: /var/www/html/index.html
+            content: Hello World!
+            mode: "0644"
+
+    - name: Verify httpd server is available
+      ansible.builtin.uri:
+        url: "{{ server_url }}"
+        method: GET
+        return_content: true
+        validate_certs: false
+        status_code: 200
+      register: get_result
+      delegate_to: localhost
+
+    - name: Verify content on static page
+      ansible.builtin.assert:
+        that: "'Hello World!' in get_result.content"

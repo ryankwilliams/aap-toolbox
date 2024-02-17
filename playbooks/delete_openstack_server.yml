@@ -1,0 +1,17 @@
+---
+- name: Delete OpenStack Server
+  hosts: localhost
+
+  vars:
+    server_name: "{{ lookup('ansible.builtin.env', 'SERVER_NAME', default='') }}"
+
+  tasks:
+    - name: Validate input
+      ansible.builtin.assert:
+        that:
+          - server_name != ""
+
+    - name: Delete server
+      openstack.cloud.server:
+        name: "{{ server_name }}"
+        state: absent
