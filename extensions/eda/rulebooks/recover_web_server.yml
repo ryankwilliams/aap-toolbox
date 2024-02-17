@@ -1,0 +1,18 @@
+---
+- name: Recover HTTP server
+  hosts: localhost
+
+  sources:
+    - name: Listen for server alerts
+      ansible.eda.url_check:
+        urls:
+          - "http://{{ http_server_ip_address }}/"
+        delay: 30
+
+  rules:
+    - name: Recover http server
+      condition: event.url_check.status == "down"
+      action:
+        run_job_template:
+          name: "recover_http_server"
+          organization: "{{ organization }}"
