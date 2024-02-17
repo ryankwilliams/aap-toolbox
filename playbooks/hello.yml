@@ -1,8 +1,8 @@
 ---
-- name: Demo
+- name: Hello
   hosts: localhost
 
   tasks:
-    - name: Task 1
+    - name: Task
       ansible.builtin.debug:
         msg: "Hello world"
