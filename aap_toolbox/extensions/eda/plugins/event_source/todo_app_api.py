@@ -40,5 +40,4 @@ if __name__ == "__main__":
         async def put(self, event) -> None:
             print(event)
 
-    # asyncio.run(main(MockQueue(), dict(url="http://10.0.98.190:8022")))
     asyncio.run(main(MockQueue(), dict(url="http://0.0.0.0:8080")))

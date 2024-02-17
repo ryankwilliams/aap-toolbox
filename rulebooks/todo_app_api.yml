@@ -1,15 +1,15 @@
 ---
-- name: Todo app api
+- name: Process todo tasks
   hosts: localhost
 
   sources:
-    - name: Listen for tasks from todo app api
+    - name: Poll for new todo tasks
       ryankwilliams.aap_toolbox.todo_app_api:
-        url: "http://10.0.98.190:8022"
+        url: "{{ app_url }}"
         delay: 30
 
   rules:
-    - name: todo
+    - name: Process todo tasks in todo state
       condition: event.status == "todo"
       action:
         debug:
