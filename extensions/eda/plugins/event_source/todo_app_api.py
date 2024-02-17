@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 async def main(queue: asyncio.Queue, args: Dict[str, Any]) -> None:
     url = args.get("url")
-    delay = args.get("delay", 2)
+    delay = args.get("delay", 30)
 
     while True:
         try:
@@ -26,7 +26,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]) -> None:
                         async with session.put(
                             url=f"{url}/api/tasks/{task['task_id']}",
                             json={"status": "in progress"},
-                        ) as response:
+                        ):
                             pass
         except aiohttp.ClientError as e:
             await queue.put({"error_msg": str(e)})
