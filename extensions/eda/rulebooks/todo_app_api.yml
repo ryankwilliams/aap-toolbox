@@ -4,7 +4,7 @@
 
   sources:
     - name: Listen for new todo tasks
-      ryankwilliams.aap_toolbox.todo_app_api:
+      todo_app_api:
         url: "{{ app_url }}"
         delay: 30
 
