@@ -1,0 +1,16 @@
+---
+- name: Process task manager events
+  hosts: localhost
+
+  sources:
+    - name: Listen for task manager events
+      ryankwilliams.aap_toolbox.todo_app_api:
+        url: "{{ task_manager_url }}"
+        delay: 30
+
+  rules:
+    - name: Process tasks that are in a 'todo' state
+      condition: event.status == "todo"
+      action:
+        debug:
+          msg: "Handling task id: {{ event.task_id }}"
