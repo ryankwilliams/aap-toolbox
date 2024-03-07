@@ -4,7 +4,7 @@
 
   sources:
     - name: Listen for task manager events
-      ryankwilliams.aap_toolbox.todo_app_api:
+      ryankwilliams.aap_toolbox.task_manager:
         url: "{{ task_manager_url }}"
         delay: 30
 
