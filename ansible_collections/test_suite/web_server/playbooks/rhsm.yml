@@ -1,0 +1,38 @@
+---
+- name: Manage rhsm subscription
+  hosts: web_server
+
+  vars:
+    rhsm_action: "{{ lookup('ansible.builtin.env', 'RHSM_ACTION', default='') }}"
+    rhsm_username: "{{ lookup('ansible.builtin.env', 'RHSM_USERNAME', default='') }}"
+    rhsm_password: "{{ lookup('ansible.builtin.env', 'RHSM_PASSWORD', default='') }}"
+
+  tasks:
+    - name: Validate rhsm action is defined
+      ansible.builtin.assert:
+        that:
+          - rhsm_action != ""
+          - rhsm_action == "register" or rhsm_action == "unregister"
+
+    - name: Register with rhsm
+      when: rhsm_action == "register"
+      block:
+        - name: Validate register input is defined
+          ansible.builtin.assert:
+            that:
+              - rhsm_username != ""
+              - rhsm_password != ""
+
+        - name: Register with rhsm
+          community.general.redhat_subscription:
+            state: present
+            username: "{{ rhsm_username }}"
+            password: "{{ rhsm_password }}"
+            auto_attach: true
+          become: true
+
+    - name: Unregister from rhsm
+      community.general.redhat_subscription:
+        state: absent
+      become: true
+      when: rhsm_action == "unregister"

@@ -1,27 +1,21 @@
 ---
-- name: Deploy HTTP server
-  hosts: http_server
+- name: Deploy web server
+  hosts: web_server
 
   vars:
     server_url: "http://{{ ansible_facts.default_ipv4.address }}:80"
 
+  vars_files:
+    - vars/aws.yml
+    - vars/openstack.yml
+
   tasks:
-    - name: Configure dnf repositories
-      become: true
-      block:
-        - name: Add repositories
-          ansible.builtin.yum_repository:
-            name: "{{ item.name }}"
-            description: "{{ item.name }} repository"
-            baseurl: "{{ item.baseurl }}"
-            gpgcheck: false
-            enabled: true
-            sslverify: false
-          loop:
-            - name: appstream
-              baseurl: "{{ appstream_base_url }}"
-            - name: baseos
-              baseurl: "{{ baseos_base_url }}"
+    - name: Validate global input
+      ansible.builtin.include_tasks: tasks/validate_global_input.yml
+
+    - name: Get aws ec2 server public ip address
+      when: cloud_provider == "aws"
+      ansible.builtin.include_tasks: tasks/get_aws_server_public_ip.yml
 
     - name: Install/configure httpd server
       become: true

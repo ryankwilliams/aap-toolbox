@@ -1,0 +1,7 @@
+---
+server_name: "{{ lookup('ansible.builtin.env', 'SERVER_NAME', default='') }}"
+keypair_name: "{{ lookup('ansible.builtin.env', 'KEYPAIR_NAME', default='') }}"
+flavor: "{{ lookup('ansible.builtin.env', 'FLAVOR', default='') }}"
+image: "{{ lookup('ansible.builtin.env', 'IMAGE', default='') }}"
+network: "{{ lookup('ansible.builtin.env', 'NETWORK', default='') }}"
+security_group: "{{ lookup('ansible.builtin.env', 'SECURITY_GROUP', default='default') }}"

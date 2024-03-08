@@ -1,6 +1,6 @@
 ---
-- name: Stop HTTP server
-  hosts: http_server
+- name: Stop web server
+  hosts: web_server
   gather_facts: false
 
   tasks:

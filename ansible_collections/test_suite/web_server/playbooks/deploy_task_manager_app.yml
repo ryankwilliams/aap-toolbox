@@ -1,0 +1,44 @@
+---
+- name: Deploy task manager application
+  hosts: task_manager
+
+  vars:
+    task_manager_repo: https://github.com/ryankwilliams/task-manager.git
+    task_manager_repo_branch: main
+    task_manager_dir: ~/task-manager
+    task_manager_url: "http://{{ ansible_facts.default_ipv4.address }}:9090"  # TODO: Get port from input
+
+  tasks:
+    - name: Install package dependencies
+      become: true
+      ansible.builtin.dnf:  # noqa: package-latest
+        name:
+          - git
+          - podman
+          - python3.11
+          - python3.11-pip
+        state: latest
+
+    - name: Clone task-manager app repository
+      ansible.builtin.git:
+        repo: "{{ task_manager_repo }}"
+        version: "{{ task_manager_repo_branch }}"
+        dest: "{{ task_manager_dir }}"
+        force: true
+
+    - name: Install python dependencies
+      ansible.builtin.pip:
+        name:
+          - podman-compose
+          - python-dotenv
+        executable: pip3.11
+
+    - name: Start task-manager app
+      ansible.builtin.shell: nohup podman-compose up &
+      args:
+        chdir: "{{ task_manager_dir }}"
+      changed_when: true
+
+    - name: Task manager app url
+      ansible.builtin.debug:
+        msg: "Task manager url: {{ task_manager_url }}"

@@ -5,3 +5,5 @@
 # Ansible
 .cache
 context
+inventory
+ansible.cfg

@@ -1,0 +1,22 @@
+---
+- name: Get aws server public ip address
+  delegate_to: localhost
+  block:
+    - name: Validate ec2 server name is defined
+      ansible.builtin.assert:
+        that:
+          - server_name is defined
+          - server_name != ""
+
+    - name: Get aws server info
+      amazon.aws.ec2_instance_info:
+        region: "{{ region_name }}"
+        filters:
+          "tag:Name": "{{ server_name }}"
+          "tag:server-name": "{{ server_name }}"
+          "tag:managed-by": "atf-test-suite"
+      register: instance_info
+
+    - name: Set server url
+      ansible.builtin.set_fact:
+        server_url: "http://{{ instance_info.instances[0].public_ip_address }}:80"

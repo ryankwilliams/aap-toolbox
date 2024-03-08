@@ -1,0 +1,4 @@
+---
+- name: Validate global input is defined
+  ansible.builtin.assert:
+    that: cloud_provider != ""

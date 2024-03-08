@@ -1,0 +1,7 @@
+---
+region_name: "{{ lookup('ansible.builtin.env', 'AWS_REGION', default='us-east-1') }}"
+instance_type: "{{ lookup('ansible.builtin.env', 'AWS_EC2_INSTANCE_TYPE', default='t2.micro') }}"
+image_id: "{{ lookup('ansible.builtin.env', 'AWS_EC2_IMAGE_ID', default='') }}" # TODO: Add back
+keypair_name: "{{ lookup('ansible.builtin.env', 'AWS_KEY_PAIR_NAME', default='') }}"
+vpc_subnet_id: "{{ lookup('ansible.builtin.env', 'AWS_VPC_SUBNET_ID', default='') }}" # TODO: Add back
+security_group_name: "{{ lookup('ansible.builtin.env', 'AWS_SECURITY_GROUP_NAME', default='rywillia') }}"
