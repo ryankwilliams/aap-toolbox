@@ -15,8 +15,6 @@
         name:
           - git
           - podman
-          - python3.11
-          - python3.11-pip
         state: latest
 
     - name: Clone task-manager app repository
@@ -26,18 +24,35 @@
         dest: "{{ task_manager_dir }}"
         force: true
 
-    - name: Install python dependencies
-      ansible.builtin.pip:
-        name:
-          - podman-compose
-          - python-dotenv
-        executable: pip3.11
+    - name: Create podman quadlet directory
+      ansible.builtin.file:
+        path: "~/.config/containers/systemd"
+        state: directory
+        mode: "0755"
 
-    - name: Start task-manager app
-      ansible.builtin.shell: nohup podman-compose up &
-      args:
-        chdir: "{{ task_manager_dir }}"
-      changed_when: true
+    - name: Copy task-manager podman quadlet files to quadlet directory
+      ansible.builtin.copy:
+        src: "{{ task_manager_dir }}/deploy/podman_quadlet"
+        dest: "~/.config/containers/systemd"
+        mode: "0644"
+        remote_src: true
+
+    - name: Reload systemd to generate task-manager quadlet service files
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
+
+    - name: Start task-manager-db service
+      ansible.builtin.systemd:
+        name: task-manager-db
+        state: started
+        scope: user
+
+    - name: Start task-manager-app service
+      ansible.builtin.systemd:
+        name: task-manager-app
+        state: started
+        scope: user
 
     - name: Task manager app url
       ansible.builtin.debug:
