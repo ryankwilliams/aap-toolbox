@@ -45,4 +45,4 @@
 
 - name: Task manager app url
   ansible.builtin.debug:
-    msg: "Task manager url: {{ task_manager_url }}"
+    msg: "Task manager url: {{ deploy_app_url }}"
