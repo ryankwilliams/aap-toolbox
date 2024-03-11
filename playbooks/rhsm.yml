@@ -1,6 +1,6 @@
 ---
 - name: Manage rhsm subscription
-  hosts: web_server
+  hosts: rhsm
 
   tasks:
     - name: Manage rhsm
