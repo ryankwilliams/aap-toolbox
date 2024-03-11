@@ -1,0 +1,3 @@
+rhsm_action: "{{ lookup('ansible.builtin.env', 'RHSM_ACTION', default='') }}"
+rhsm_username: "{{ lookup('ansible.builtin.env', 'RHSM_USERNAME', default='') }}"
+rhsm_password: "{{ lookup('ansible.builtin.env', 'RHSM_PASSWORD', default='') }}"

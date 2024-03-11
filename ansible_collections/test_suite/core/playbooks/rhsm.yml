@@ -1,0 +1,8 @@
+---
+- name: Manage rhsm subscription
+  hosts: web_server
+
+  tasks:
+    - name: Manage rhsm
+      ansible.builtin.include_role:
+        name: test_suite.core.rhsm
