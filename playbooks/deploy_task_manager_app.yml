@@ -2,6 +2,9 @@
 - name: Deploy task manager application
   hosts: task_manager
 
+  vars:
+    deploy_type: "vm"
+
   tasks:
     - name: Validate required input
       ansible.builtin.assert:
