@@ -5,4 +5,4 @@
   tasks:
     - name: Manage rhsm
       ansible.builtin.include_role:
-        name: test_suite.core.rhsm
+        name: ryankwilliams.aap_toolbox.rhsm

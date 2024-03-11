@@ -3,7 +3,7 @@ version: 3
 
 images:
   base_image:
-    name: registry.redhat.io/ansible-automation-platform-24/de-minimal-rhel9:latest
+    name: registry.redhat.io/ansible-automation-platform-24/ee-minimal-rhel9:latest
 
 dependencies:
   ansible_core:
@@ -12,9 +12,13 @@ dependencies:
     package_pip: ansible-runner
   galaxy:
     collections:
-      - ansible.eda
+      - name: amazon.aws
+      - name: community.general
+      - name: openstack.cloud
       - name: https://github.com/ryankwilliams/aap-toolbox.git
         type: git
+  python:
+    - openstacksdk
   system:
     - git [platform:rpm]
     - python3.11 [platform:rpm]
@@ -28,9 +32,3 @@ dependencies:
 
 options:
   package_manager_path: /usr/bin/microdnf
-
-additional_build_steps:
-  prepend_base:
-    - RUN mkdir -p /opt/builder/bin/
-  append_final:
-    - RUN rm -rf /usr/bin/python3 && ln -s python3.11 /usr/bin/python3

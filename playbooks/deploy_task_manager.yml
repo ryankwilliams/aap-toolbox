@@ -11,6 +11,6 @@
 
     - name: Deploy task-manager
       ansible.builtin.include_role:
-        name: test_suite.task_manager_app.deploy
+        name: ryankwilliams.aap_toolbox.task_manager_app
         tasks_from: vm_deploy
       when: deploy_type == "vm"
