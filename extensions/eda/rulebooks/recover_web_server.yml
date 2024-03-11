@@ -10,9 +10,9 @@
         delay: 30
 
   rules:
-    - name: Recover http server
+    - name: Recover web server
       condition: event.url_check.status == "down"
       action:
         run_job_template:
-          name: "recover_http_server"
+          name: "recover_web_server"
           organization: "{{ organization }}"
