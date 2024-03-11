@@ -1,0 +1,16 @@
+---
+- name: Deploy task manager application
+  hosts: task_manager
+
+  tasks:
+    - name: Validate required input
+      ansible.builtin.assert:
+        that:
+          - deploy_type is defined
+          - deploy_type == "vm"
+
+    - name: Deploy task-manager
+      ansible.builtin.include_role:
+        name: test_suite.task_manager_app.deploy
+        tasks_from: vm_deploy
+      when: deploy_type == "vm"

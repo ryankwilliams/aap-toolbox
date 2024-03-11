@@ -1,0 +1,48 @@
+- name: Install package dependencies
+  become: true
+  ansible.builtin.dnf:  # noqa: package-latest
+    name:
+      - git
+      - podman
+    state: latest
+
+- name: Clone task-manager app repository
+  ansible.builtin.git:
+    repo: "{{ deploy_app_repo }}"
+    version: "{{ deploy_app_repo_branch }}"
+    dest: "{{ deploy_app_dir }}"
+    force: true
+
+- name: Initialize task-manager systemd services
+  become: true
+  block:
+    - name: Create podman quadlet directory
+      ansible.builtin.file:
+        path: "/etc/containers/systemd"
+        state: directory
+        mode: "0755"
+
+    - name: Copy task-manager podman quadlet files to quadlet directory
+      ansible.builtin.copy:
+        src: "{{ deploy_app_dir }}/deploy/podman_quadlet/"
+        dest: "/etc/containers/systemd"
+        mode: "0644"
+        remote_src: true
+
+    - name: Reload systemd to generate task-manager quadlet service files
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Start task-manager-db service
+      ansible.builtin.systemd:
+        name: task-manager-db
+        state: started
+
+    - name: Start task-manager-app service
+      ansible.builtin.systemd:
+        name: task-manager-app
+        state: started
+
+- name: Task manager app url
+  ansible.builtin.debug:
+    msg: "Task manager url: {{ task_manager_url }}"
