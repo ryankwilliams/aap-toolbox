@@ -1,19 +1,48 @@
 ---
+- name: Provision cloud server
+  hosts: localhost
+
+  vars:
+    cloud_provider: "{{ lookup('ansible.builtin.env', 'CLOUD_PROVIDER', default='') }}"
+
+  tasks:
+    - name: Provision cloud server
+      ansible.builtin.include_role:
+        name: ryankwilliams.aap_toolbox.vm
+        tasks_from: create
+      vars:
+        vm_inventory_groups:
+          - task_manager
+
 - name: Deploy task manager application
   hosts: task_manager
 
   vars:
-    deploy_type: "vm"
+    cloud_provider: "{{ lookup('ansible.builtin.env', 'CLOUD_PROVIDER', default='') }}"
+    region_name: "{{ lookup('ansible.builtin.env', 'AWS_REGION', default='us-east-1') }}"
 
   tasks:
-    - name: Validate required input
-      ansible.builtin.assert:
-        that:
-          - deploy_type is defined
-          - deploy_type == "vm"
+    - name: Register with RHSM
+      ansible.builtin.include_role:
+        name: ryankwilliams.aap_toolbox.rhsm
+
+    - name: Get aws server info
+      amazon.aws.ec2_instance_info:
+        region: "{{ region_name }}"
+        filters:
+          "tag:Name": "{{ server_name }}"
+          "tag:server-name": "{{ server_name }}"
+          "tag:managed-by": "atf-test-suite"
+      register: instance_info
+      when: cloud_provider == "aws"
+      delegate_to: localhost
+
+    - name: Set server url
+      ansible.builtin.set_fact:
+        deploy_app_url: "http://{{ instance_info.instances[0].public_ip_address }}:9090"
+      when: cloud_provider == "aws"
 
     - name: Deploy task-manager
       ansible.builtin.include_role:
         name: ryankwilliams.aap_toolbox.task_manager_app
         tasks_from: vm_deploy
-      when: deploy_type == "vm"

@@ -1,0 +1,126 @@
+- name: Validate global input
+  ansible.builtin.include_tasks: validate_global_input.yml
+
+- name: Provision openstack server
+  when: cloud_provider == "openstack"
+  block:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        file: openstack.yml
+
+    - name: Validate openstack input
+      ansible.builtin.assert:
+        that:
+          - server_name != ""
+          - keypair_name != ""
+
+    - name: Provision openstack server
+      openstack.cloud.server:
+        name: "{{ server_name }}"
+        key_name: "{{ keypair_name }}"
+        security_groups: "{{ security_group }}"
+        flavor: "{{ flavor }}"
+        image: "{{ image }}"
+        network: "{{ network }}"
+        timeout: 120
+        state: present
+        auto_ip: false
+      register: server_results
+
+    - name: Wait for openstack server to be ready
+      ansible.builtin.wait_for:
+        state: started
+        host: "{{ server_results['server']['addresses'][network][0]['addr'] }}"
+        port: 22
+        search_regex: OpenSSH
+        timeout: 120
+        sleep: 10
+
+    - name: Openstack server summary
+      ansible.builtin.debug:
+        msg: "IP Address: {{ server_results['server']['addresses'][network][0]['addr'] }}"
+
+    - name: Add host to dynamic inventory
+      ansible.builtin.add_host:
+        name: "{{ server_results['server']['addresses'][network][0]['addr'] }}"
+        groups: "{{ vm_inventory_groups }}"
+        ansible_ssh_user: cloud-user
+        ansible_host_key_checking: false
+
+- name: Provision aws ec2 server
+  when: cloud_provider == "aws"
+  block:
+    - name: Include vars
+      ansible.builtin.include_vars:
+        file: aws.yml
+
+    - name: Validate aws input
+      ansible.builtin.assert:
+        that:
+          - server_name != ""
+          - keypair_name != ""
+
+    - name: Check if aws ec2 server already exists
+      amazon.aws.ec2_instance_info:
+        region: "{{ region_name }}"
+        filters:
+          "tag:Name": "{{ server_name }}"
+          "tag:server-name": "{{ server_name }}"
+          "tag:managed-by": "atf-test-suite"
+      register: ec2_instance_info
+
+    # TODO: Create/delete security group at runtime
+    - name: Provision aws ec2 server
+      when: ec2_instance_info.instances | length == 0
+      block:
+        - name: Provision aws ec2 server
+          amazon.aws.ec2_instance:
+            state: started
+            region: "{{ region_name }}"
+            name: "{{ server_name }}"
+            key_name: "{{ keypair_name }}"
+            security_groups: "{{ security_group_name }}"
+            instance_type: "{{ instance_type }}"
+            image_id: "{{ image_id }}"
+            vpc_subnet_id: "{{ vpc_subnet_id }}"
+            network:
+              assign_public_ip: true
+            wait: true
+            wait_timeout: 600
+            tags:
+              server-name: "{{ server_name }}"
+              managed-by: "atf-test-suite"
+          register: ec2_instance_create_result
+
+        - name: Get aws ec2 server info
+          amazon.aws.ec2_instance_info:
+            region: "{{ region_name }}"
+            instance_ids: "{{ ec2_instance_create_result.instance_ids }}"
+          register: ec2_create_instance_info
+          until: ec2_create_instance_info.instances[0].public_ip_address is defined
+          retries: 60
+          delay: 10
+
+        - name: Initialize ec2 server info variable
+          ansible.builtin.set_fact:
+            ec2_instance_info: "{{ ec2_create_instance_info }}"
+
+    - name: Wait for aws ec2 server to be ready
+      ansible.builtin.wait_for:
+        state: started
+        host: "{{ ec2_instance_info.instances[0].public_ip_address }}"
+        port: 22
+        search_regex: OpenSSH
+        timeout: 120
+        sleep: 10
+
+    - name: Add host to dynamic inventory
+      ansible.builtin.add_host:
+        name: "{{ ec2_instance_info.instances[0].public_ip_address }}"
+        groups: "{{ vm_inventory_groups }}"
+        ansible_ssh_user: ec2-user
+        ansible_host_key_checking: false
+
+    - name: Aws ec2 server summary
+      ansible.builtin.debug:
+        msg: "IP Address: {{ ec2_instance_info.instances[0].public_ip_address }}"
