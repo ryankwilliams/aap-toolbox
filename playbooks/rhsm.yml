@@ -1,8 +1,0 @@
----
-- name: Manage rhsm subscription
-  hosts: rhsm
-
-  tasks:
-    - name: Manage rhsm
-      ansible.builtin.include_role:
-        name: ryankwilliams.aap_toolbox.rhsm

@@ -5,51 +5,8 @@
   vars:
     cloud_provider: "{{ lookup('ansible.builtin.env', 'CLOUD_PROVIDER', default='') }}"
 
-  vars_files:
-    - vars/aws.yml
-    - vars/openstack.yml
-
   tasks:
-    - name: Validate global input
-      ansible.builtin.include_tasks: tasks/validate_global_input.yml
-
-    - name: Deprovision openstack server
-      when: cloud_provider == "openstack"
-      block:
-        - name: Validate openstack input
-          ansible.builtin.assert:
-            that:
-              - server_name != ""
-
-        - name: Delete openstack server
-          openstack.cloud.server:
-            name: "{{ server_name }}"
-            state: absent
-
-    - name: Deprovision aws ec2 server
-      when: cloud_provider == "aws"
-      block:
-        - name: Validate aws input
-          ansible.builtin.assert:
-            that:
-              - server_name != ""
-
-        - name: Get aws ec2 server info
-          amazon.aws.ec2_instance_info:
-            region: "{{ region_name }}"
-            filters:
-              "tag:Name": "{{ server_name }}"
-              "tag:server-name": "{{ server_name }}"
-              "tag:managed-by": "atf-test-suite"
-          register: ec2_instance_info
-
-        - name: Delete aws ec2 server
-          amazon.aws.ec2_instance:
-            region: "{{ region_name }}"
-            state: absent
-            instance_ids:
-              - "{{ item.instance_id }}"
-          loop: "{{ ec2_instance_info.instances }}"
-          when: ec2_instance_info.instances | length > 0
-          loop_control:
-            label: "{{ item.tags.Name }}"
+    - name: Deprovision cloud server
+      ansible.builtin.include_role:
+        name: ryankwilliams.aap_toolbox.vm
+        tasks_from: delete
