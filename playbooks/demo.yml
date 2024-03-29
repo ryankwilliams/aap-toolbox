@@ -1,0 +1,8 @@
+---
+- name: Demo
+  hosts: localhost
+
+  tasks:
+    - name: Demo
+      ansible.builtin.debug:
+        msg: "{{ secret }}"
