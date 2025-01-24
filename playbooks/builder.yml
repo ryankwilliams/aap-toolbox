@@ -1,0 +1,8 @@
+---
+- name: Builder
+  hosts: localhost
+
+  tasks:
+    - name: Install ansible-builder
+      ansible.builtin.shell:
+        python3 -m pip install ansible-builder
