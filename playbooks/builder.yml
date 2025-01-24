@@ -6,3 +6,18 @@
     - name: Install ansible-builder
       ansible.builtin.shell:
         python3 -m pip install ansible-builder
+
+    - name: Download ee file
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/ryankwilliams/aap-toolbox/refs/heads/main/controller_ee/execution-environment.yml
+        dest: ./tmp-ee.yml
+
+    - name: Update base image
+      ansible.builtin.lineinfile:
+        path: ./tmp-ee.yml
+        regexp: "    name: registry.*"
+        line: "    name: {{ base_image_url }}"
+
+    - name: Run ansible builder
+      ansible.builtin.shell: >
+        ansible-builder  build -f ./tmp-ee.yml -t test-ee:latest
