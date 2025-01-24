@@ -20,4 +20,4 @@
 
     - name: Run ansible builder
       ansible.builtin.shell: >
-        ansible-builder  build -f ./tmp-ee.yml -t test-ee:latest
+        ansible-builder build -f ./tmp-ee.yml -t test-ee:latest --container-runtime=podman
